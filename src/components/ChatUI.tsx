@@ -1,6 +1,6 @@
 
 import { useState, useRef, useEffect } from "react";
-import { Send, Sparkles, Info, X, Plus, Settings } from "lucide-react";
+import { Send, Sparkles, Info, X, Plus, Settings, Globe, Microscope } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useToast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
@@ -113,6 +113,20 @@ export const ChatUI = () => {
     }
   };
 
+  const handleSearchClick = () => {
+    toast({
+      title: "Web search",
+      description: "Web search capability will be available soon!",
+    });
+  };
+
+  const handleDeepResearchClick = () => {
+    toast({
+      title: "Deep thinking",
+      description: "Deep thinking capability will be available soon!",
+    });
+  };
+
   return (
     <div className="relative h-screen flex flex-col bg-background">
       {/* Header */}
@@ -156,83 +170,128 @@ export const ChatUI = () => {
 
       {/* Main chat area */}
       <div className="flex-grow overflow-y-auto">
-        <div className="min-h-full flex flex-col">
-          {messages.map((message, index) => (
-            <ChatMessage
-              key={message.id}
-              message={message}
-              typingEffect={isTyping && index === messages.length - 1}
-            />
-          ))}
-          {isTyping && (
-            <div className="py-6 px-4 sm:px-6 flex bg-secondary/50">
-              <div className="container mx-auto max-w-4xl flex gap-4 sm:gap-6">
-                <div className="flex-shrink-0 mt-1">
-                  <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-full bg-primary/10 flex items-center justify-center">
-                    <Bot className="h-5 w-5 text-primary animate-pulse" />
+        {messages.length === 1 ? (
+          <div className="h-full flex flex-col items-center justify-center px-4">
+            <h2 className="text-3xl font-bold text-foreground mb-6">What can I help with?</h2>
+            <div className="w-full max-w-3xl">
+              <Textarea 
+                ref={inputRef}
+                value={input}
+                onChange={handleInputChange}
+                onKeyDown={handleKeyDown}
+                placeholder="Ask anything"
+                className="resize-none text-lg py-6 px-4 min-h-[60px] border-secondary shadow-soft focus:shadow-medium transition-shadow duration-300 rounded-xl"
+                rows={1}
+              />
+              <div className="flex mt-4 gap-2 justify-center">
+                <Button 
+                  variant="outline" 
+                  className="gap-2 py-6 px-4 h-auto rounded-lg border-muted"
+                  onClick={handleSearchClick}
+                >
+                  <Globe className="h-5 w-5" />
+                  <span>Search</span>
+                </Button>
+                <Button 
+                  variant="outline" 
+                  className="gap-2 py-6 px-4 h-auto rounded-lg border-muted"
+                  onClick={handleDeepResearchClick}
+                >
+                  <Microscope className="h-5 w-5" />
+                  <span>Deep research</span>
+                </Button>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="min-h-full flex flex-col">
+            {messages.map((message, index) => (
+              <ChatMessage
+                key={message.id}
+                message={message}
+                typingEffect={isTyping && index === messages.length - 1}
+              />
+            ))}
+            {isTyping && (
+              <div className="py-6 px-4 sm:px-6 flex bg-secondary/50">
+                <div className="container mx-auto max-w-4xl flex gap-4 sm:gap-6">
+                  <div className="flex-shrink-0 mt-1">
+                    <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-full bg-primary/10 flex items-center justify-center">
+                      <Bot className="h-5 w-5 text-primary animate-pulse" />
+                    </div>
                   </div>
-                </div>
-                <div className="flex-1 flex items-center">
-                  <div className="flex space-x-2">
-                    <div className="h-2 w-2 rounded-full bg-primary/60 animate-pulse"></div>
-                    <div className="h-2 w-2 rounded-full bg-primary/60 animate-pulse delay-150"></div>
-                    <div className="h-2 w-2 rounded-full bg-primary/60 animate-pulse delay-300"></div>
+                  <div className="flex-1 flex items-center">
+                    <div className="flex space-x-2">
+                      <div className="h-2 w-2 rounded-full bg-primary/60 animate-pulse"></div>
+                      <div className="h-2 w-2 rounded-full bg-primary/60 animate-pulse delay-150"></div>
+                      <div className="h-2 w-2 rounded-full bg-primary/60 animate-pulse delay-300"></div>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          )}
-          <div ref={messagesEndRef} />
-        </div>
+            )}
+            <div ref={messagesEndRef} />
+          </div>
+        )}
       </div>
 
       {/* Input area */}
-      <div className="border-t border-border/80 backdrop-blur-sm bg-background/90 p-4 sm:p-6">
-        <div className="container mx-auto max-w-4xl">
-          <form onSubmit={handleSubmit} className="relative">
-            <Textarea
-              ref={inputRef}
-              value={input}
-              onChange={handleInputChange}
-              onKeyDown={handleKeyDown}
-              placeholder="Message OmniGenius..."
-              className="resize-none pr-14 py-4 min-h-[60px] max-h-60 border-secondary shadow-soft focus:shadow-medium transition-shadow duration-300"
-              rows={1}
-            />
-            <Button
-              type="submit"
-              size="icon"
-              className="absolute bottom-2.5 right-2.5 h-8 w-8 rounded-full"
-              disabled={!input.trim() || isTyping}
-            >
-              <Send size={16} />
-            </Button>
-          </form>
-          <div className="flex justify-between mt-2 px-1">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="text-xs text-muted-foreground hover:text-foreground"
-              onClick={startNewChat}
-            >
-              <Plus className="h-3.5 w-3.5 mr-1" />
-              New chat
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="text-xs text-muted-foreground hover:text-foreground"
-              onClick={() => toast({
-                title: "Coming soon",
-                description: "Model selection will be available soon!",
-              })}
-            >
-              <Sparkles className="h-3.5 w-3.5 mr-1" />
-              GPT-4 Turbo
-            </Button>
+      {messages.length > 1 && (
+        <div className="border-t border-border/80 backdrop-blur-sm bg-background/90 p-4 sm:p-6">
+          <div className="container mx-auto max-w-4xl">
+            <form onSubmit={handleSubmit} className="relative">
+              <Textarea
+                ref={inputRef}
+                value={input}
+                onChange={handleInputChange}
+                onKeyDown={handleKeyDown}
+                placeholder="Message OmniGenius..."
+                className="resize-none pr-14 py-4 min-h-[60px] max-h-60 border-secondary shadow-soft focus:shadow-medium transition-shadow duration-300"
+                rows={1}
+              />
+              <Button
+                type="submit"
+                size="icon"
+                className="absolute bottom-2.5 right-2.5 h-8 w-8 rounded-full"
+                disabled={!input.trim() || isTyping}
+              >
+                <Send size={16} />
+              </Button>
+            </form>
+            <div className="flex justify-between mt-2 px-1">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-xs text-muted-foreground hover:text-foreground"
+                onClick={startNewChat}
+              >
+                <Plus className="h-3.5 w-3.5 mr-1" />
+                New chat
+              </Button>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-xs text-muted-foreground hover:text-foreground"
+                  onClick={handleSearchClick}
+                >
+                  <Globe className="h-3.5 w-3.5 mr-1" />
+                  Search
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-xs text-muted-foreground hover:text-foreground"
+                  onClick={handleDeepResearchClick}
+                >
+                  <Microscope className="h-3.5 w-3.5 mr-1" />
+                  Deep research
+                </Button>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Info panel */}
       <AnimatePresence>

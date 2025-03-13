@@ -1,6 +1,5 @@
 
 import { useEffect } from "react";
-import { motion } from "framer-motion";
 import { PageTransition } from "@/components/PageTransition";
 import { ChatUI } from "@/components/ChatUI";
 
