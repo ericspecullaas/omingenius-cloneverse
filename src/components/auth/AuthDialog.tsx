@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { SignInForm } from "./SignInForm";
 import { SignUpForm } from "./SignUpForm";
+import { Separator } from "@/components/ui/separator";
 
 type AuthMode = "signin" | "signup";
 
