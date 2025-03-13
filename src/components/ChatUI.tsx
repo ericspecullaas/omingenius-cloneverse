@@ -32,6 +32,9 @@ export const ChatUI = () => {
     setIsInfoPanelOpen(!isInfoPanelOpen);
   };
 
+  // Determine if this is the initial welcome state or chat state
+  const isWelcomeView = messages.length === 1 && !isTyping && !isLoading;
+
   return (
     <div className="relative h-screen flex flex-col bg-background">
       <ChatHeader onInfoPanelToggle={toggleInfoPanel} />
@@ -42,7 +45,7 @@ export const ChatUI = () => {
           <div className="h-full flex items-center justify-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
           </div>
-        ) : messages.length === 1 ? (
+        ) : isWelcomeView ? (
           <ChatWelcome
             input={input}
             handleInputChange={handleInputChange}
@@ -54,8 +57,8 @@ export const ChatUI = () => {
         )}
       </div>
 
-      {/* Input area */}
-      {(messages.length > 1 || isLoading === false) && (
+      {/* Input area - Only show the full input when not in welcome view */}
+      {!isWelcomeView && (
         <ChatInput
           input={input}
           setInput={setInput}
