@@ -1,242 +1,131 @@
 
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Menu, X, LogOut } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
-import { cn } from "@/lib/utils";
+import { motion } from "framer-motion";
+import { Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useToast } from "@/components/ui/use-toast";
-import { AuthDialog } from "./auth/AuthDialog";
-import { useAuth } from "@/contexts/AuthContext";
+import { UserMenu } from "@/components/UserMenu";
+import { cn } from "@/lib/utils";
+import { useMobile } from "@/hooks/use-mobile";
 
-export const Navbar = () => {
-  const [isScrolled, setIsScrolled] = useState(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isAuthDialogOpen, setIsAuthDialogOpen] = useState(false);
-  const [authMode, setAuthMode] = useState<"signin" | "signup">("signin");
+export function Navbar() {
   const location = useLocation();
-  const { toast } = useToast();
-  const { user, signOut } = useAuth();
-
-  // Monitor scroll position
+  const isMobile = useMobile();
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+  
+  // Close menu when changing routes
+  useEffect(() => {
+    setIsMenuOpen(false);
+  }, [location.pathname]);
+  
+  // Add scroll listener
   useEffect(() => {
     const handleScroll = () => {
-      if (window.scrollY > 20) {
-        setIsScrolled(true);
+      const offset = window.scrollY;
+      if (offset > 50) {
+        setScrolled(true);
       } else {
-        setIsScrolled(false);
+        setScrolled(false);
       }
     };
-
+    
     window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+    };
   }, []);
-
-  // Close mobile menu when route changes
-  useEffect(() => {
-    setIsMobileMenuOpen(false);
-  }, [location.pathname]);
-
-  const handleSignIn = () => {
-    setAuthMode("signin");
-    setIsAuthDialogOpen(true);
-  };
-
-  const handleSignUp = () => {
-    setAuthMode("signup");
-    setIsAuthDialogOpen(true);
-  };
-
-  const handleSignOut = async () => {
-    await signOut();
-    toast({
-      title: "Signed out",
-      description: "You have been successfully signed out",
-    });
-  };
-
-  const navLinks = [
-    { name: "Home", path: "/" },
-    { name: "Chat", path: "/chat" },
+  
+  const links = [
+    { href: "/", label: "Home" },
+    { href: "/chat", label: "Chat" },
   ];
-
+  
   return (
-    <>
-      <header
-        className={cn(
-          "fixed top-0 left-0 right-0 z-50 py-4 transition-all duration-300",
-          isScrolled
-            ? "glass shadow-soft"
-            : "bg-transparent"
-        )}
-      >
-        <nav className="container mx-auto px-6 flex items-center justify-between">
-          {/* Logo */}
-          <Link 
-            to="/" 
-            className="flex items-center"
+    <header
+      className={cn(
+        "fixed top-0 left-0 right-0 z-50 transition-all duration-300",
+        scrolled ? "backdrop-blur-md bg-background/80 shadow-sm" : "bg-transparent"
+      )}
+    >
+      <div className="container mx-auto px-4 py-3 flex items-center justify-between">
+        <Link to="/" className="flex items-center gap-2">
+          <motion.div
+            initial={{ rotate: -10, scale: 0.9 }}
+            animate={{ rotate: 0, scale: 1 }}
+            transition={{ duration: 0.3 }}
           >
-            <motion.div
-              initial={{ opacity: 0, y: -5 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
-              className="text-2xl font-display font-bold text-foreground"
-            >
-              <span className="text-primary">Omni</span>Genius
-            </motion.div>
-          </Link>
-
-          {/* Desktop Nav Links */}
-          <div className="hidden md:flex items-center space-x-1">
-            {navLinks.map((link, i) => (
-              <motion.div
-                key={link.name}
-                initial={{ opacity: 0, y: -5 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.1 + i * 0.1 }}
-              >
+            <div className="h-8 w-8 rounded-full bg-primary flex items-center justify-center">
+              <span className="text-primary-foreground font-bold">O</span>
+            </div>
+          </motion.div>
+          <span className="font-bold text-lg">OmniGenius</span>
+        </Link>
+        
+        {!isMobile ? (
+          <div className="flex items-center gap-10">
+            <div className="flex items-center space-x-6">
+              {links.map((link) => (
                 <Link
-                  to={link.path}
+                  key={link.href}
+                  to={link.href}
                   className={cn(
-                    "px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200",
-                    location.pathname === link.path
-                      ? "text-primary"
-                      : "text-foreground/70 hover:text-foreground hover:bg-muted"
+                    "text-sm font-medium transition-colors hover:text-primary",
+                    location.pathname === link.href
+                      ? "text-foreground"
+                      : "text-muted-foreground"
                   )}
                 >
-                  {link.name}
+                  {link.label}
                 </Link>
-              </motion.div>
-            ))}
+              ))}
+            </div>
+            <UserMenu />
           </div>
-
-          {/* Call to Action Buttons */}
-          <div className="hidden md:flex items-center space-x-4">
-            {user ? (
-              <motion.div
-                initial={{ opacity: 0, y: -5 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3 }}
-              >
-                <Button
-                  variant="ghost"
-                  className="text-sm font-medium"
-                  onClick={handleSignOut}
-                >
-                  <LogOut className="mr-2 h-4 w-4" />
-                  Sign out
-                </Button>
-              </motion.div>
-            ) : (
-              <>
-                <motion.div
-                  initial={{ opacity: 0, y: -5 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.3 }}
-                >
-                  <Button
-                    variant="ghost"
-                    className="text-sm font-medium"
-                    onClick={handleSignIn}
-                  >
-                    Sign in
-                  </Button>
-                </motion.div>
-                <motion.div
-                  initial={{ opacity: 0, y: -5 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.4 }}
-                >
-                  <Button
-                    className="text-sm font-medium"
-                    onClick={handleSignUp}
-                  >
-                    Sign up
-                  </Button>
-                </motion.div>
-              </>
-            )}
-          </div>
-
-          {/* Mobile Menu Button */}
-          <div className="md:hidden">
+        ) : (
+          <div className="flex items-center gap-2">
+            <UserMenu />
             <Button
               variant="ghost"
               size="icon"
-              className="text-foreground"
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              aria-label={isMobileMenuOpen ? "Close menu" : "Open menu"}
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
             >
-              {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+              {isMenuOpen ? (
+                <X className="h-5 w-5" />
+              ) : (
+                <Menu className="h-5 w-5" />
+              )}
             </Button>
           </div>
-        </nav>
-
-        {/* Mobile Menu */}
-        <AnimatePresence>
-          {isMobileMenuOpen && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: "auto" }}
-              exit={{ opacity: 0, height: 0 }}
-              transition={{ duration: 0.3 }}
-              className="md:hidden glass border-t border-border/50"
-            >
-              <div className="container mx-auto px-6 py-4 flex flex-col space-y-4">
-                {navLinks.map((link) => (
-                  <Link
-                    key={link.name}
-                    to={link.path}
-                    className={cn(
-                      "px-4 py-3 rounded-md text-base font-medium transition-colors duration-200",
-                      location.pathname === link.path
-                        ? "text-primary bg-accent"
-                        : "text-foreground/70 hover:text-foreground hover:bg-muted"
-                    )}
-                  >
-                    {link.name}
-                  </Link>
-                ))}
-                <div className="flex flex-col space-y-2 pt-2 border-t border-border/50">
-                  {user ? (
-                    <Button
-                      variant="ghost"
-                      className="justify-start"
-                      onClick={handleSignOut}
-                    >
-                      <LogOut className="mr-2 h-4 w-4" />
-                      Sign out
-                    </Button>
-                  ) : (
-                    <>
-                      <Button
-                        variant="ghost"
-                        className="justify-start"
-                        onClick={handleSignIn}
-                      >
-                        Sign in
-                      </Button>
-                      <Button
-                        className="justify-start"
-                        onClick={handleSignUp}
-                      >
-                        Sign up
-                      </Button>
-                    </>
-                  )}
-                </div>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </header>
-
-      {/* Auth Dialog */}
-      <AuthDialog 
-        isOpen={isAuthDialogOpen}
-        onClose={() => setIsAuthDialogOpen(false)}
-        defaultMode={authMode}
-      />
-    </>
+        )}
+      </div>
+      
+      {/* Mobile menu */}
+      {isMobile && (
+        <motion.div
+          initial={false}
+          animate={isMenuOpen ? { height: "auto", opacity: 1 } : { height: 0, opacity: 0 }}
+          transition={{ duration: 0.2 }}
+          className="overflow-hidden border-b border-border/50"
+        >
+          <div className="container mx-auto px-4 py-3 flex flex-col space-y-3">
+            {links.map((link) => (
+              <Link
+                key={link.href}
+                to={link.href}
+                className={cn(
+                  "py-2 text-sm font-medium transition-colors hover:text-primary",
+                  location.pathname === link.href
+                    ? "text-foreground"
+                    : "text-muted-foreground"
+                )}
+              >
+                {link.label}
+              </Link>
+            ))}
+          </div>
+        </motion.div>
+      )}
+    </header>
   );
-};
+}
