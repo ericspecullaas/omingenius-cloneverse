@@ -1,38 +1,55 @@
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { PageTransition } from "@/components/PageTransition";
 import { Button } from "@/components/ui/button";
 import { CheckIcon } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/components/ui/use-toast";
+import { AuthDialog } from "@/components/auth/AuthDialog";
 
 const PricingTier = ({ 
   name, 
   price, 
   features, 
+  priceId,
   isPopular = false,
   buttonText = "Get Started" 
 }: { 
   name: string; 
   price: string; 
   features: string[]; 
+  priceId: string;
   isPopular?: boolean;
   buttonText?: string;
 }) => {
   const { toast } = useToast();
   const { user } = useAuth();
+  const [isAuthDialogOpen, setIsAuthDialogOpen] = useState(false);
 
-  const handleClick = () => {
+  const handleSubscribe = async () => {
     if (!user) {
+      setIsAuthDialogOpen(true);
+      return;
+    }
+
+    try {
       toast({
-        title: "Authentication required",
-        description: "Please sign in to subscribe to a plan",
+        title: "Processing",
+        description: "Preparing your subscription...",
       });
-    } else {
+      
+      // In a real implementation, we would make an API call to create a Stripe Checkout session
       toast({
         title: "Coming soon",
         description: "Payment processing will be available soon!",
+      });
+    } catch (error) {
+      console.error("Error creating checkout session:", error);
+      toast({
+        title: "Error",
+        description: "There was a problem setting up your subscription.",
+        variant: "destructive",
       });
     }
   };
@@ -65,11 +82,17 @@ const PricingTier = ({
       </ul>
       <Button 
         className="w-full"
-        onClick={handleClick}
+        onClick={handleSubscribe}
         variant={isPopular ? "default" : "outline"}
       >
         {buttonText}
       </Button>
+      
+      <AuthDialog 
+        isOpen={isAuthDialogOpen} 
+        onClose={() => setIsAuthDialogOpen(false)} 
+        defaultMode="signin"
+      />
     </div>
   );
 };
@@ -83,6 +106,60 @@ const Pricing = () => {
       document.title = "OmniGenius";
     };
   }, []);
+
+  const pricingTiers = [
+    {
+      name: "Starter",
+      price: "$20",
+      priceId: "price_starter",
+      features: [
+        "500 messages per month",
+        "Basic AI assistance",
+        "Standard response time",
+        "Email support"
+      ]
+    },
+    {
+      name: "Pro",
+      price: "$50",
+      priceId: "price_pro",
+      features: [
+        "2,000 messages per month",
+        "Advanced AI capabilities",
+        "Priority response time",
+        "24/7 email and chat support",
+        "Custom training"
+      ],
+      isPopular: true
+    },
+    {
+      name: "Startup",
+      price: "$100",
+      priceId: "price_startup",
+      features: [
+        "5,000 messages per month",
+        "Full AI feature access",
+        "Dedicated account manager",
+        "API access",
+        "Custom integrations",
+        "Team collaboration"
+      ]
+    },
+    {
+      name: "Enterprise",
+      price: "Custom",
+      priceId: "price_enterprise",
+      features: [
+        "Unlimited messages",
+        "White-label solution",
+        "SLA guarantee",
+        "On-premise deployment option",
+        "Custom AI model training",
+        "24/7 priority support"
+      ],
+      buttonText: "Contact Sales"
+    }
+  ];
 
   return (
     <PageTransition>
@@ -98,53 +175,17 @@ const Pricing = () => {
           </div>
 
           <div className="mt-16 grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-            <PricingTier
-              name="Starter"
-              price="$20"
-              features={[
-                "500 messages per month",
-                "Basic AI assistance",
-                "Standard response time",
-                "Email support"
-              ]}
-            />
-            <PricingTier
-              name="Pro"
-              price="$50"
-              features={[
-                "2,000 messages per month",
-                "Advanced AI capabilities",
-                "Priority response time",
-                "24/7 email and chat support",
-                "Custom training"
-              ]}
-              isPopular={true}
-            />
-            <PricingTier
-              name="Startup"
-              price="$100"
-              features={[
-                "5,000 messages per month",
-                "Full AI feature access",
-                "Dedicated account manager",
-                "API access",
-                "Custom integrations",
-                "Team collaboration"
-              ]}
-            />
-            <PricingTier
-              name="Enterprise"
-              price="Custom"
-              features={[
-                "Unlimited messages",
-                "White-label solution",
-                "SLA guarantee",
-                "On-premise deployment option",
-                "Custom AI model training",
-                "24/7 priority support"
-              ]}
-              buttonText="Contact Sales"
-            />
+            {pricingTiers.map((tier) => (
+              <PricingTier
+                key={tier.name}
+                name={tier.name}
+                price={tier.price}
+                features={tier.features}
+                priceId={tier.priceId}
+                isPopular={tier.isPopular}
+                buttonText={tier.buttonText}
+              />
+            ))}
           </div>
 
           <div className="mt-16 text-center">
