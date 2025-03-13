@@ -1,19 +1,13 @@
 
-import { useState, useRef, useEffect } from "react";
-import { Send, Sparkles, Info, X, Plus, Settings, Globe, Microscope } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { useState, useRef } from "react";
+import { AnimatePresence } from "framer-motion";
 import { useToast } from "@/components/ui/use-toast";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { ChatMessage } from "@/components/ChatMessage";
-import { cn } from "@/lib/utils";
-
-interface Message {
-  id: string;
-  role: "user" | "assistant";
-  content: string;
-  timestamp: Date;
-}
+import { ChatHeader } from "@/components/chat/ChatHeader";
+import { ChatMessageList } from "@/components/chat/ChatMessageList";
+import { ChatInput } from "@/components/chat/ChatInput";
+import { ChatWelcome } from "@/components/chat/ChatWelcome";
+import { InfoPanel } from "@/components/chat/InfoPanel";
+import { Message } from "@/components/chat/types";
 
 export const ChatUI = () => {
   const [input, setInput] = useState("");
@@ -27,21 +21,8 @@ export const ChatUI = () => {
   ]);
   const [isTyping, setIsTyping] = useState(false);
   const [isInfoPanelOpen, setIsInfoPanelOpen] = useState(false);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const { toast } = useToast();
-
-  // Scroll to bottom whenever messages change
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
-
-  // Focus input on mount
-  useEffect(() => {
-    if (inputRef.current) {
-      inputRef.current.focus();
-    }
-  }, []);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -113,256 +94,45 @@ export const ChatUI = () => {
     }
   };
 
-  const handleSearchClick = () => {
-    toast({
-      title: "Web search",
-      description: "Web search capability will be available soon!",
-    });
-  };
-
-  const handleDeepResearchClick = () => {
-    toast({
-      title: "Deep thinking",
-      description: "Deep thinking capability will be available soon!",
-    });
+  const toggleInfoPanel = () => {
+    setIsInfoPanelOpen(!isInfoPanelOpen);
   };
 
   return (
     <div className="relative h-screen flex flex-col bg-background">
-      {/* Header */}
-      <header className="flex justify-between items-center py-3 px-4 sm:px-6 border-b border-border/80 backdrop-blur-sm bg-background/90 z-10">
-        <div className="flex items-center">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="lg:hidden mr-2"
-            onClick={() => toast({
-              title: "Coming soon",
-              description: "Sidebar functionality will be available soon!",
-            })}
-          >
-            <Plus size={20} />
-          </Button>
-          <h1 className="text-lg font-medium">OmniGenius Chat</h1>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="text-muted-foreground hover:text-foreground"
-            onClick={() => setIsInfoPanelOpen(!isInfoPanelOpen)}
-          >
-            <Info size={18} />
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="text-muted-foreground hover:text-foreground"
-            onClick={() => toast({
-              title: "Coming soon",
-              description: "Settings functionality will be available soon!",
-            })}
-          >
-            <Settings size={18} />
-          </Button>
-        </div>
-      </header>
+      <ChatHeader onInfoPanelToggle={toggleInfoPanel} />
 
       {/* Main chat area */}
       <div className="flex-grow overflow-y-auto">
         {messages.length === 1 ? (
-          <div className="h-full flex flex-col items-center justify-center px-4">
-            <h2 className="text-3xl font-bold text-foreground mb-6">What can I help with?</h2>
-            <div className="w-full max-w-3xl">
-              <Textarea 
-                ref={inputRef}
-                value={input}
-                onChange={handleInputChange}
-                onKeyDown={handleKeyDown}
-                placeholder="Ask anything"
-                className="resize-none text-lg py-6 px-4 min-h-[60px] border-secondary shadow-soft focus:shadow-medium transition-shadow duration-300 rounded-xl"
-                rows={1}
-              />
-              <div className="flex mt-4 gap-2 justify-center">
-                <Button 
-                  variant="outline" 
-                  className="gap-2 py-6 px-4 h-auto rounded-lg border-muted"
-                  onClick={handleSearchClick}
-                >
-                  <Globe className="h-5 w-5" />
-                  <span>Search</span>
-                </Button>
-                <Button 
-                  variant="outline" 
-                  className="gap-2 py-6 px-4 h-auto rounded-lg border-muted"
-                  onClick={handleDeepResearchClick}
-                >
-                  <Microscope className="h-5 w-5" />
-                  <span>Deep research</span>
-                </Button>
-              </div>
-            </div>
-          </div>
+          <ChatWelcome
+            input={input}
+            handleInputChange={handleInputChange}
+            handleKeyDown={handleKeyDown}
+            inputRef={inputRef}
+          />
         ) : (
-          <div className="min-h-full flex flex-col">
-            {messages.map((message, index) => (
-              <ChatMessage
-                key={message.id}
-                message={message}
-                typingEffect={isTyping && index === messages.length - 1}
-              />
-            ))}
-            {isTyping && (
-              <div className="py-6 px-4 sm:px-6 flex bg-secondary/50">
-                <div className="container mx-auto max-w-4xl flex gap-4 sm:gap-6">
-                  <div className="flex-shrink-0 mt-1">
-                    <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-full bg-primary/10 flex items-center justify-center">
-                      <Bot className="h-5 w-5 text-primary animate-pulse" />
-                    </div>
-                  </div>
-                  <div className="flex-1 flex items-center">
-                    <div className="flex space-x-2">
-                      <div className="h-2 w-2 rounded-full bg-primary/60 animate-pulse"></div>
-                      <div className="h-2 w-2 rounded-full bg-primary/60 animate-pulse delay-150"></div>
-                      <div className="h-2 w-2 rounded-full bg-primary/60 animate-pulse delay-300"></div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-            <div ref={messagesEndRef} />
-          </div>
+          <ChatMessageList messages={messages} isTyping={isTyping} />
         )}
       </div>
 
       {/* Input area */}
       {messages.length > 1 && (
-        <div className="border-t border-border/80 backdrop-blur-sm bg-background/90 p-4 sm:p-6">
-          <div className="container mx-auto max-w-4xl">
-            <form onSubmit={handleSubmit} className="relative">
-              <Textarea
-                ref={inputRef}
-                value={input}
-                onChange={handleInputChange}
-                onKeyDown={handleKeyDown}
-                placeholder="Message OmniGenius..."
-                className="resize-none pr-14 py-4 min-h-[60px] max-h-60 border-secondary shadow-soft focus:shadow-medium transition-shadow duration-300"
-                rows={1}
-              />
-              <Button
-                type="submit"
-                size="icon"
-                className="absolute bottom-2.5 right-2.5 h-8 w-8 rounded-full"
-                disabled={!input.trim() || isTyping}
-              >
-                <Send size={16} />
-              </Button>
-            </form>
-            <div className="flex justify-between mt-2 px-1">
-              <Button
-                variant="ghost"
-                size="sm"
-                className="text-xs text-muted-foreground hover:text-foreground"
-                onClick={startNewChat}
-              >
-                <Plus className="h-3.5 w-3.5 mr-1" />
-                New chat
-              </Button>
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="text-xs text-muted-foreground hover:text-foreground"
-                  onClick={handleSearchClick}
-                >
-                  <Globe className="h-3.5 w-3.5 mr-1" />
-                  Search
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="text-xs text-muted-foreground hover:text-foreground"
-                  onClick={handleDeepResearchClick}
-                >
-                  <Microscope className="h-3.5 w-3.5 mr-1" />
-                  Deep research
-                </Button>
-              </div>
-            </div>
-          </div>
-        </div>
+        <ChatInput
+          input={input}
+          setInput={setInput}
+          handleSubmit={handleSubmit}
+          isTyping={isTyping}
+          startNewChat={startNewChat}
+        />
       )}
 
       {/* Info panel */}
       <AnimatePresence>
         {isInfoPanelOpen && (
-          <motion.div
-            initial={{ opacity: 0, x: 300 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: 300 }}
-            transition={{ type: "spring", damping: 25, stiffness: 300 }}
-            className="absolute top-0 right-0 z-50 h-full w-full sm:max-w-sm glass-card border-l border-border/80 shadow-medium"
-          >
-            <div className="p-6 h-full flex flex-col">
-              <div className="flex justify-between items-center mb-6">
-                <h2 className="text-xl font-semibold">About OmniGenius</h2>
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  onClick={() => setIsInfoPanelOpen(false)}
-                >
-                  <X size={18} />
-                </Button>
-              </div>
-              
-              <div className="space-y-6 overflow-y-auto flex-grow">
-                <div>
-                  <h3 className="text-lg font-medium mb-2">What is OmniGenius?</h3>
-                  <p className="text-sm text-muted-foreground">
-                    OmniGenius is an advanced AI assistant designed to provide helpful, accurate, and thoughtful responses to your questions and tasks.
-                  </p>
-                </div>
-                
-                <div>
-                  <h3 className="text-lg font-medium mb-2">Capabilities</h3>
-                  <ul className="text-sm text-muted-foreground space-y-2">
-                    <li>• Answer questions and provide information</li>
-                    <li>• Assist with creative writing and brainstorming</li>
-                    <li>• Help with problem-solving and analysis</li>
-                    <li>• Provide coding assistance and debugging</li>
-                    <li>• Offer explanations on complex topics</li>
-                  </ul>
-                </div>
-                
-                <div>
-                  <h3 className="text-lg font-medium mb-2">Limitations</h3>
-                  <ul className="text-sm text-muted-foreground space-y-2">
-                    <li>• May not have knowledge of events after training</li>
-                    <li>• Can occasionally make mistakes or provide inaccurate information</li>
-                    <li>• Limited understanding of context in long conversations</li>
-                    <li>• Cannot browse the internet or access external files</li>
-                  </ul>
-                </div>
-                
-                <div>
-                  <h3 className="text-lg font-medium mb-2">Privacy</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Your conversations with OmniGenius are private and secure. We do not use your conversations for training or share them with third parties.
-                  </p>
-                </div>
-              </div>
-              
-              <div className="mt-6 pt-4 border-t border-border/80">
-                <p className="text-xs text-muted-foreground text-center">
-                  OmniGenius v1.0 • Made with care
-                </p>
-              </div>
-            </div>
-          </motion.div>
+          <InfoPanel isOpen={isInfoPanelOpen} onClose={toggleInfoPanel} />
         )}
       </AnimatePresence>
     </div>
   );
 };
-
-const Bot = (props: any) => <Sparkles {...props} />;
