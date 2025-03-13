@@ -1,7 +1,8 @@
 
-import { Info, Plus, Settings } from "lucide-react";
+import { Info, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
+import { UserMenu } from "@/components/UserMenu";
 
 interface ChatHeaderProps {
   onInfoPanelToggle: () => void;
@@ -35,17 +36,7 @@ export const ChatHeader = ({ onInfoPanelToggle }: ChatHeaderProps) => {
         >
           <Info size={18} />
         </Button>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="text-muted-foreground hover:text-foreground"
-          onClick={() => toast({
-            title: "Coming soon",
-            description: "Settings functionality will be available soon!",
-          })}
-        >
-          <Settings size={18} />
-        </Button>
+        <UserMenu />
       </div>
     </header>
   );

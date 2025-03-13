@@ -1,5 +1,6 @@
 
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { 
@@ -9,7 +10,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
-import { LogOut, User } from "lucide-react";
+import { LogOut, Settings, User, CreditCard } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { AuthDialog } from "@/components/auth/AuthDialog";
 
@@ -21,12 +22,30 @@ export function UserMenu() {
   if (!user) {
     return (
       <>
-        <Button 
-          variant="ghost" 
-          onClick={() => setIsAuthDialogOpen(true)}
-        >
-          Sign In
-        </Button>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button 
+              variant="ghost" 
+              size="icon"
+              className="text-muted-foreground hover:text-foreground"
+            >
+              <Settings size={18} />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent className="w-56" align="end" forceMount>
+            <DropdownMenuItem className="cursor-pointer" onClick={() => setIsAuthDialogOpen(true)}>
+              <User className="mr-2 h-4 w-4" />
+              <span>Sign In</span>
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <Link to="/pricing">
+              <DropdownMenuItem className="cursor-pointer">
+                <CreditCard className="mr-2 h-4 w-4" />
+                <span>Pricing</span>
+              </DropdownMenuItem>
+            </Link>
+          </DropdownMenuContent>
+        </DropdownMenu>
         <AuthDialog 
           isOpen={isAuthDialogOpen} 
           onClose={() => setIsAuthDialogOpen(false)} 
@@ -82,6 +101,12 @@ export function UserMenu() {
           <User className="mr-2 h-4 w-4" />
           <span>Profile</span>
         </DropdownMenuItem>
+        <Link to="/pricing">
+          <DropdownMenuItem className="cursor-pointer">
+            <CreditCard className="mr-2 h-4 w-4" />
+            <span>Pricing Plans</span>
+          </DropdownMenuItem>
+        </Link>
         <DropdownMenuSeparator />
         <DropdownMenuItem 
           className="cursor-pointer text-red-600" 
