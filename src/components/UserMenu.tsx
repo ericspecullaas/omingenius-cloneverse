@@ -10,12 +10,14 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
-import { LogOut, Settings, User, CreditCard } from "lucide-react";
+import { LogOut, Settings, User, CreditCard, Moon, Sun } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useTheme } from "@/contexts/ThemeContext";
 import { AuthDialog } from "@/components/auth/AuthDialog";
 
 export function UserMenu() {
   const { user, signOut } = useAuth();
+  const { theme, setTheme } = useTheme();
   const [isAuthDialogOpen, setIsAuthDialogOpen] = useState(false);
   
   // If user is not logged in, show sign in button
@@ -36,6 +38,16 @@ export function UserMenu() {
             <DropdownMenuItem className="cursor-pointer" onClick={() => setIsAuthDialogOpen(true)}>
               <User className="mr-2 h-4 w-4" />
               <span>Sign In</span>
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem 
+              className="cursor-pointer flex items-center justify-between"
+              onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+            >
+              <div className="flex items-center">
+                {theme === "dark" ? <Sun className="mr-2 h-4 w-4" /> : <Moon className="mr-2 h-4 w-4" />}
+                <span>{theme === "dark" ? "Light Mode" : "Dark Mode"}</span>
+              </div>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <Link to="/pricing">
@@ -103,6 +115,15 @@ export function UserMenu() {
             <span>Profile</span>
           </DropdownMenuItem>
         </Link>
+        <DropdownMenuItem 
+          className="cursor-pointer flex items-center justify-between"
+          onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+        >
+          <div className="flex items-center">
+            {theme === "dark" ? <Sun className="mr-2 h-4 w-4" /> : <Moon className="mr-2 h-4 w-4" />}
+            <span>{theme === "dark" ? "Light Mode" : "Dark Mode"}</span>
+          </div>
+        </DropdownMenuItem>
         <Link to="/pricing">
           <DropdownMenuItem className="cursor-pointer">
             <CreditCard className="mr-2 h-4 w-4" />
