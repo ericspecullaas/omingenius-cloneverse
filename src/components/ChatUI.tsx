@@ -80,12 +80,13 @@ export const ChatUI = () => {
     if (!user) return;
 
     try {
+      // Convert the JavaScript Date to an ISO string for Supabase
       const { error } = await supabase.from('chat_messages').insert({
         id: message.id,
         user_id: user.id,
         content: message.content,
         role: message.role,
-        timestamp: message.timestamp,
+        timestamp: message.timestamp.toISOString(), // Convert Date to ISO string
         chat_id: currentChatId
       });
 
