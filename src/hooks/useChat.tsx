@@ -7,7 +7,7 @@ import { v4 as uuidv4 } from 'uuid';
 
 // --- CONFIGURATION ---
 const RUNPOD_ENDPOINT_ID = "luh6jj0o7bxzuf"; // Your Endpoint ID
-const RUNPOD_API_KEY = "rpa_4SLGH4968VJYXS7D5VO8H5QRGMAZIUA3NUFS4DDAdfbysm"; // <--- PASTE YOUR KEY HERE
+const RUNPOD_API_KEY = "YOUR_RUNPOD_API_KEY_HERE"; // <--- PASTE YOUR KEY HERE
 const RUNPOD_URL = `https://api.runpod.ai/v2/${RUNPOD_ENDPOINT_ID}/runsync`;
 
 export function useChat() {
@@ -15,7 +15,7 @@ export function useChat() {
     {
       id: "welcome",
       role: "assistant",
-      content: "Hello! I'm Nexus, your AI assistant. How can I help you today?",
+      content: "Hello! I'm OmniGenius, your AI assistant. How can I help you today?",
       timestamp: new Date(),
     },
   ]);
