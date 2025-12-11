@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { Message } from "@/components/chat/types";
@@ -6,12 +5,17 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { v4 as uuidv4 } from 'uuid';
 
+// --- CONFIGURATION ---
+const RUNPOD_ENDPOINT_ID = "luh6jj0o7bxzuf"; // Your Endpoint ID
+const RUNPOD_API_KEY = "rpa_4SLGH4968VJYXS7D5VO8H5QRGMAZIUA3NUFS4DDAdfbysm"; // <--- PASTE YOUR KEY HERE
+const RUNPOD_URL = `https://api.runpod.ai/v2/${RUNPOD_ENDPOINT_ID}/runsync`;
+
 export function useChat() {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: "welcome",
       role: "assistant",
-      content: "Hello! I'm OmniGenius, your AI assistant. How can I help you today?",
+      content: "Hello! I'm Nexus, your AI assistant. How can I help you today?",
       timestamp: new Date(),
     },
   ]);
@@ -21,7 +25,7 @@ export function useChat() {
   const { toast } = useToast();
   const { user } = useAuth();
 
-  // Load messages from Supabase when the component mounts
+  // Load messages from Supabase
   useEffect(() => {
     const loadMessages = async () => {
       if (!user) {
@@ -37,9 +41,7 @@ export function useChat() {
           .eq('chat_id', currentChatId)
           .order('timestamp', { ascending: true });
 
-        if (error) {
-          throw error;
-        }
+        if (error) throw error;
 
         if (data && data.length > 0) {
           const loadedMessages: Message[] = data.map(msg => ({
@@ -69,35 +71,60 @@ export function useChat() {
   // Save message to Supabase
   const saveMessage = async (message: Message) => {
     if (!user) return;
-
     try {
-      // Convert the JavaScript Date to an ISO string for Supabase
       const { error } = await supabase.from('chat_messages').insert({
         id: message.id,
         user_id: user.id,
         content: message.content,
         role: message.role,
-        timestamp: message.timestamp.toISOString(), // Convert Date to ISO string
+        timestamp: message.timestamp.toISOString(),
         chat_id: currentChatId
       });
-
-      if (error) {
-        throw error;
-      }
+      if (error) throw error;
     } catch (error) {
       console.error("Error saving message:", error);
-      toast({
-        title: "Error saving message",
-        description: "There was a problem saving your message.",
-        variant: "destructive",
-      });
     }
   };
 
-  const sendMessage = (content: string) => {
+  // --- THE REAL AI FUNCTION ---
+  const askOmnigenius = async (userPrompt: string): Promise<string> => {
+    try {
+      const payload = {
+        input: {
+          prompt: userPrompt,
+          max_tokens: 500,
+          alpha: 0.015,
+          recurrence: 4
+        }
+      };
+
+      const response = await fetch(RUNPOD_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${RUNPOD_API_KEY}`
+        },
+        body: JSON.stringify(payload)
+      });
+
+      const data = await response.json();
+
+      if (data.status === "COMPLETED") {
+        return data.output.response;
+      } else {
+        console.error("RunPod Error:", data);
+        return "I'm thinking too hard... (Server Timeout or Error)";
+      }
+    } catch (error) {
+      console.error("Network Error:", error);
+      return "Error: Could not reach the brain.";
+    }
+  };
+
+  const sendMessage = async (content: string) => {
     if (!content.trim()) return;
 
-    // Add user message
+    // 1. Add User Message
     const userMessage: Message = {
       id: uuidv4(),
       role: "user",
@@ -108,39 +135,24 @@ export function useChat() {
     setMessages((prev) => [...prev, userMessage]);
     setIsTyping(true);
 
-    // Save user message to Supabase if logged in
-    if (user) {
-      saveMessage(userMessage);
-    }
+    if (user) saveMessage(userMessage);
 
-    // Simulate AI response after delay
-    setTimeout(() => {
-      const aiResponses = [
-        "I understand your question. Based on my analysis, there are several approaches we could take to solve this problem.",
-        "That's an interesting topic. There are multiple perspectives to consider here, and I'd be happy to explore them with you.",
-        "Thanks for sharing that. I can provide some insights based on the available information, though I recommend consulting with a specialist for definitive advice.",
-        "I've processed your request and here's what I found. Let me know if you'd like me to elaborate on any specific aspect.",
-        "Great question! This is a complex topic with various nuances. Let me break it down for you in a comprehensive way.",
-      ];
+    // 2. Call the Real AI (Omnigenius)
+    const aiResponseText = await askOmnigenius(content.trim());
 
-      const randomResponse = aiResponses[Math.floor(Math.random() * aiResponses.length)];
+    // 3. Add AI Response
+    const assistantMessage: Message = {
+      id: uuidv4(),
+      role: "assistant",
+      content: aiResponseText,
+      timestamp: new Date(),
+      chat_id: currentChatId
+    };
 
-      const assistantMessage: Message = {
-        id: uuidv4(),
-        role: "assistant",
-        content: randomResponse,
-        timestamp: new Date(),
-        chat_id: currentChatId
-      };
+    setMessages((prev) => [...prev, assistantMessage]);
+    setIsTyping(false);
 
-      setMessages((prev) => [...prev, assistantMessage]);
-      setIsTyping(false);
-
-      // Save assistant message to Supabase if logged in
-      if (user) {
-        saveMessage(assistantMessage);
-      }
-    }, 1500);
+    if (user) saveMessage(assistantMessage);
   };
 
   const startNewChat = () => {
